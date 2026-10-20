@@ -32,14 +32,17 @@ export function createTransferService({ store, providers, stepDelayMs = config.s
     audit(store, 'system', 'transfer.status', { transferId: t.id, status: to });
   }
 
-  function dailyVolume(userId, now = Date.now()) {
+  function volume(userId, windowMs, now = Date.now()) {
     let sum = 0;
     for (const t of store.transfers.values()) {
       if (t.userId !== userId || !COUNTS_FOR_LIMIT.has(t.status)) continue;
-      if (now - Date.parse(t.createdAt) < 24 * 3600 * 1000) sum += t.sendAmountMinor;
+      if (now - Date.parse(t.createdAt) < windowMs) sum += t.sendAmountMinor;
     }
     return sum;
   }
+  const DAY_MS = 24 * 3600 * 1000;
+  const dailyVolume = (userId) => volume(userId, DAY_MS);
+  const monthlyVolume = (userId) => volume(userId, 30 * DAY_MS);
 
   async function createTransfer(user, { quoteId, recipientId, paymentMethod, purpose }, idempotencyKey) {
     if (idempotencyKey) {
@@ -65,12 +68,15 @@ export function createTransferService({ store, providers, stepDelayMs = config.s
       throw badRequest('INVALID_PAYMENT_METHOD', `Método de pago: ${PAYMENT_METHODS.join(', ')}`);
     }
 
-    const { minPerTransferCents, maxPerTransferCents, maxDailyCents } = config.limits;
+    const { minPerTransferCents, maxPerTransferCents, maxDailyCents, maxMonthlyCents } = config.limits;
     if (quote.sendAmountMinor < minPerTransferCents || quote.sendAmountMinor > maxPerTransferCents) {
       throw unprocessable('AMOUNT_OUT_OF_RANGE', 'Importe fuera de los límites del piloto', { minPerTransferCents, maxPerTransferCents });
     }
     if (dailyVolume(user.id) + quote.sendAmountMinor > maxDailyCents) {
       throw unprocessable('DAILY_LIMIT', 'Superarías el límite diario de envío del piloto', { maxDailyCents });
+    }
+    if (monthlyVolume(user.id) + quote.sendAmountMinor > maxMonthlyCents) {
+      throw unprocessable('MONTHLY_LIMIT', 'Superarías el límite mensual de envío del piloto', { maxMonthlyCents });
     }
 
     // Screening AML del destinatario contra listas de sanciones.
@@ -222,5 +228,5 @@ export function createTransferService({ store, providers, stepDelayMs = config.s
   /** Espera a que termine la liquidación en curso (útil en tests y demo). */
   const waitForSettlement = (id) => running.get(id) ?? Promise.resolve();
 
-  return { createTransfer, handleFundsReceived, cancel, getForUser, listForUser, waitForSettlement, dailyVolume };
+  return { createTransfer, handleFundsReceived, cancel, getForUser, listForUser, waitForSettlement, dailyVolume, monthlyVolume };
 }

@@ -89,10 +89,10 @@ test('screening AML bloquea destinatarios sancionados', async () => {
 
 test('límites del piloto por envío y diario', async () => {
   const token = await verifiedUser(s.api);
-  const tooBig = await newTransfer(token, { amount: '1500' });
+  const tooBig = await newTransfer(token, { amount: '300,01' });
   assert.equal(tooBig.transfer.body.error.code, 'AMOUNT_OUT_OF_RANGE');
-  for (let i = 0; i < 3; i++) assert.equal((await newTransfer(token, { amount: '1000' })).transfer.status, 201);
-  const over = await newTransfer(token, { amount: '50' });
+  for (let i = 0; i < 2; i++) assert.equal((await newTransfer(token, { amount: '300' })).transfer.status, 201);
+  const over = await newTransfer(token, { amount: '10' });
   assert.equal(over.transfer.body.error.code, 'DAILY_LIMIT');
 });
 
@@ -151,4 +151,15 @@ test('cancelación de envío pendiente de pago', async () => {
   const { transfer } = await newTransfer(token);
   const c = await s.api('POST', `/v1/transfers/${transfer.body.id}/cancel`, { token });
   assert.equal(c.body.status, 'CANCELLED');
+});
+
+test('límite mensual del piloto', async () => {
+  const token = await verifiedUser(s.api);
+  // Simula envíos de días anteriores dentro de los últimos 30 días.
+  for (let d = 2; d <= 6; d++) {
+    const { transfer } = await newTransfer(token, { amount: '300' });
+    s.store.transfers.get(transfer.body.id).createdAt = new Date(Date.now() - d * 86_400_000).toISOString();
+  }
+  const over = await newTransfer(token, { amount: '10' });
+  assert.equal(over.transfer.body.error.code, 'MONTHLY_LIMIT');
 });

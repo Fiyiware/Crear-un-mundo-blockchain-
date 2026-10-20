@@ -15,7 +15,7 @@ Daviplata o banco (Colombia) o dólares (El Salvador).
 |---------|-----------|
 | [`backend/`](backend) | API Node.js: auth, KYC, cotizaciones, destinatarios, orquestador de liquidación, webhooks, tesorería y auditoría |
 | [`mobile/`](mobile) | App React Native / Expo (iOS, Android y web) |
-| [`docs/`](docs) | [Arquitectura](docs/arquitectura.md), [plan Sandbox Regulatorio](docs/sandbox-regulatorio.md), [capturas](docs/capturas) |
+| [`docs/`](docs) | [Arquitectura](docs/arquitectura.md), [pack Sandbox Regulatorio](docs/sandbox-regulatorio.md), [Memoria Justificativa](docs/memoria-justificativa.md), [evidencias](docs/evidencias) (informe de pruebas, vídeo), [capturas](docs/capturas) |
 
 ## Arranque rápido
 
@@ -25,9 +25,11 @@ Requisitos: Node.js ≥ 20.
 # 1. Backend (modo simulado, sin claves)
 cd backend
 npm install
-npm test          # 20 tests: dominio + flujo end-to-end
-npm run demo      # demo en consola: 200 € ➔ COP en Nequi con trazabilidad completa
-npm start         # API en http://localhost:4000
+npm test                 # 21 tests: dominio + flujo end-to-end
+npm run demo             # demo en consola: 200 € ➔ COP en Nequi con trazabilidad completa
+npm run plan-pruebas     # 100 operaciones simuladas ➔ docs/evidencias/plan-pruebas-informe.md
+npm run verificar-sandbox  # conexión con los sandbox reales (requiere claves en backend/.env)
+npm start                # API en http://localhost:4000
 
 # 2. App móvil (en otra terminal)
 cd mobile
@@ -54,6 +56,6 @@ cédula `9999999999` ➔ fallo de abono con reembolso automático.
 | Integración rampa UE (Monerium) | 🟡 adaptador simulado; falta conectar Monerium Sandbox |
 | Integración blockchain (testnet) | 🟡 libro mayor simulado tipo EVM; falta adaptador Polygon Amoy |
 | Integración rampa LatAm (Bitso) | 🟡 adaptador simulado; falta conectar Bitso Sandbox |
-| Cumplimiento: límites, screening, auditoría | ✅ versión piloto |
+| Cumplimiento: límites (300 €/op.), screening, auditoría | ✅ versión piloto |
 
 Siguientes pasos detallados en [docs/arquitectura.md](docs/arquitectura.md#hoja-de-ruta-técnica).

@@ -97,7 +97,7 @@ export function createApp({
   });
 
   app.get('/v1/me', requireAuth, (req, res) => {
-    res.json({ ...publicUser(req.user), limits: config.limits, dailyVolumeMinor: transfers.dailyVolume(req.user.id) });
+    res.json({ ...publicUser(req.user), limits: config.limits, dailyVolumeMinor: transfers.dailyVolume(req.user.id), monthlyVolumeMinor: transfers.monthlyVolume(req.user.id) });
   });
 
   // ---------- KYC ----------

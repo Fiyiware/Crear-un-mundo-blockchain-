@@ -13,10 +13,12 @@ export const config = {
   quoteTtlSeconds: Number(env.QUOTE_TTL_SECONDS ?? 120),
 
   // Límites del piloto (Sandbox Regulatorio). Importes en céntimos de euro.
+  // Deliberadamente bajos para acotar el riesgo durante las pruebas.
   limits: {
     minPerTransferCents: 1_000, // 10 €
-    maxPerTransferCents: 100_000, // 1.000 €
-    maxDailyCents: 300_000, // 3.000 € / día / usuario
+    maxPerTransferCents: 30_000, // 300 € por operación
+    maxDailyCents: 60_000, // 600 € / 24 h / usuario
+    maxMonthlyCents: 150_000, // 1.500 € / 30 días / usuario
   },
 
   // Modelo de comisiones: fijo + margen sobre el tipo de cambio medio.

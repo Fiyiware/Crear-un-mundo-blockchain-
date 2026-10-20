@@ -54,7 +54,7 @@ export default function HomeScreen({ user, onContinue, onVerify }) {
           </View>
         )}
         {warnings.includes('BELOW_MIN_AMOUNT') && <ErrorText>El importe mínimo es 10 €.</ErrorText>}
-        {warnings.includes('ABOVE_MAX_AMOUNT') && <ErrorText>El máximo por envío durante el piloto es 1.000 €.</ErrorText>}
+        {warnings.includes('ABOVE_MAX_AMOUNT') && <ErrorText>El máximo por envío durante el piloto es 300 €.</ErrorText>}
         <Button title="Continuar" disabled={!quote || warnings.length > 0 || user.kycStatus !== 'APPROVED'} onPress={() => onContinue(quote)} />
       </Card>
     </Screen>
