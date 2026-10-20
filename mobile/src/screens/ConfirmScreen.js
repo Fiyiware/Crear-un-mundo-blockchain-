@@ -6,13 +6,15 @@ import { amountParts, firstName, money, METHOD_LABEL, PAYMENT_LABEL, rate } from
 import { C, R } from '../theme';
 
 const PAYMENT_METHODS = [
+  { value: 'SEPA', hint: 'SEPA Instant desde tu banco', icon: 'home' },
   { value: 'BIZUM', hint: 'Al instante, con tu móvil', icon: 'smartphone' },
   { value: 'CARD', hint: 'Débito o crédito, con 3D Secure', icon: 'credit-card' },
-  { value: 'SEPA', hint: 'SEPA Instant desde tu banco', icon: 'home' },
 ];
 
 export default function ConfirmScreen({ quote, recipient, onBack, onCreated }) {
-  const [paymentMethod, setPaymentMethod] = useState('BIZUM');
+  const [paymentMethod, setPaymentMethod] = useState('SEPA');
+  const options = Object.fromEntries((quote.paymentOptions ?? []).map((o) => [o.method, o]));
+  const selected = options[paymentMethod] ?? { feeMinor: 0, totalChargeMinor: quote.sendAmountMinor };
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const receive = amountParts(quote.receiveAmountMinor, quote.destinationCurrency);
@@ -32,7 +34,7 @@ export default function ConfirmScreen({ quote, recipient, onBack, onCreated }) {
   }
 
   return (
-    <Screen footer={<Button title={`Pagar ${money(quote.sendAmountMinor, 'EUR')} con ${PAYMENT_LABEL[paymentMethod]}`} icon="lock" onPress={confirm} loading={loading} />}>
+    <Screen footer={<Button title={`Pagar ${money(selected.totalChargeMinor, 'EUR')} con ${PAYMENT_LABEL[paymentMethod]}`} icon="lock" onPress={confirm} loading={loading} />}>
       <Header title="Revisa y paga" onBack={onBack} />
 
       <View style={{ backgroundColor: C.card, borderRadius: 24 }}>
@@ -75,8 +77,10 @@ export default function ConfirmScreen({ quote, recipient, onBack, onCreated }) {
         </View>
 
         <View style={{ paddingHorizontal: 20, paddingTop: 6, paddingBottom: 16 }}>
-          <Row label="Envías" value={money(quote.sendAmountMinor, 'EUR')} strong />
-          <Row label="Comisión" value={money(quote.fixedFeeMinor, 'EUR')} />
+          <Row label="Envías" value={money(quote.sendAmountMinor, 'EUR')} />
+          <Row label="Comisión (incluida)" value={money(quote.fixedFeeMinor, 'EUR')} />
+          <Row label={`Coste de pagar con ${PAYMENT_LABEL[paymentMethod].toLowerCase()}`} value={selected.feeMinor ? `+${money(selected.feeMinor, 'EUR')}` : 'Gratis'} valueColor={selected.feeMinor ? C.ink : C.success} />
+          <Row label="Total a pagar" value={money(selected.totalChargeMinor, 'EUR')} strong />
           <Row label="Tipo de cambio" value={`1 € = ${rate(quote.customerRate, quote.destinationCurrency)} ${quote.destinationCurrency}`} />
           <Row label="Cobra en" value={destination} />
           <Row label="Llega en" value={quote.estimatedDelivery} valueColor={C.success} />
@@ -101,9 +105,20 @@ export default function ConfirmScreen({ quote, recipient, onBack, onCreated }) {
                 <Icon name={m.icon} size={19} color={on ? C.accent : C.ink} />
               </View>
               <View style={{ flex: 1 }}>
-                <T v="bold" size={15}>
-                  {PAYMENT_LABEL[m.value]}
-                </T>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <T v="bold" size={15}>
+                    {PAYMENT_LABEL[m.value]}
+                  </T>
+                  {options[m.value]?.feeMinor ? (
+                    <T v="semi" size={12} color={C.muted}>{`+${money(options[m.value].feeMinor, 'EUR')}`}</T>
+                  ) : (
+                    <View style={{ backgroundColor: C.successBg, paddingHorizontal: 6, paddingVertical: 1, borderRadius: 999 }}>
+                      <T v="bold" size={11} color={C.success}>
+                        Sin coste
+                      </T>
+                    </View>
+                  )}
+                </View>
                 <T size={12} color={C.muted}>
                   {m.hint}
                 </T>

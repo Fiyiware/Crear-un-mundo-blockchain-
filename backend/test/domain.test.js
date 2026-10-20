@@ -73,3 +73,14 @@ test('tokens y contraseñas', () => {
   assert.ok(verifyPassword('abc12345', h));
   assert.ok(!verifyPassword('abc12346', h));
 });
+
+test('coste del medio de pago: transferencia sin coste, Bizum y tarjeta repercutidos', () => {
+  const q = buildQuote({ corridorId: 'ES-CO', mode: 'send', amountMinor: 20000, midRate: 4650 });
+  const by = Object.fromEntries(q.paymentOptions.map((o) => [o.method, o]));
+  assert.equal(by.SEPA.feeMinor, 0);
+  assert.equal(by.SEPA.totalChargeMinor, 20000);
+  assert.equal(by.BIZUM.feeMinor, 80); // 0,4 %
+  assert.equal(by.CARD.feeMinor, 200); // 1 %
+  assert.equal(by.CARD.totalChargeMinor, 20200);
+  assert.ok(by.CARD.totalCostPct > by.BIZUM.totalCostPct && by.BIZUM.totalCostPct > by.SEPA.totalCostPct);
+});

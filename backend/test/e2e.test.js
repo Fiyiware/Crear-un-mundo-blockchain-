@@ -24,6 +24,8 @@ test('flujo completo España ➔ Colombia (Nequi)', async () => {
   assert.equal(transfer.status, 201, JSON.stringify(transfer.body));
   assert.equal(transfer.body.status, 'AWAITING_PAYMENT');
   assert.equal(transfer.body.payment.instructions.type, 'BIZUM');
+  assert.equal(transfer.body.paymentFeeMinor, 80);
+  assert.equal(transfer.body.totalChargeMinor, 20080);
 
   const pay = await s.api('POST', `/v1/sandbox/transfers/${transfer.body.id}/simulate-payment`, { token });
   assert.equal(pay.status, 202);
@@ -116,6 +118,7 @@ test('fallo en el abono provoca reembolso automático', async () => {
   await s.transfers.waitForSettlement(transfer.body.id);
   const final = await s.api('GET', `/v1/transfers/${transfer.body.id}`, { token });
   assert.equal(final.body.status, 'REFUNDED');
+  assert.equal(final.body.timeline.at(-1).amountMinor, final.body.totalChargeMinor);
   assert.match(final.body.failureReason, /rechazada/);
 });
 

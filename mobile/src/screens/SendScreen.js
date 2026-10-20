@@ -153,7 +153,7 @@ export default function SendScreen({ recipient, corridorId: initialCorridor = 'E
           </T>
         ) : quote ? (
           <T size={13} color={C.muted2} num>
-            Comisión <T v="bold" size={13}>0,99 €</T> · coste total <T v="bold" size={13}>{`${String(quote.totalCostPct).replace('.', ',')} %`}</T> · llega en &lt; 1 min
+            Comisión <T v="bold" size={13}>0,99 €</T> · coste total <T v="bold" size={13}>{`${String(quote.totalCostPct).replace('.', ',')} %`}</T> · pagando por transferencia, sin coste extra
           </T>
         ) : null}
       </View>
