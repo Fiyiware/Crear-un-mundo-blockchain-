@@ -25,13 +25,11 @@ export const config = {
   fees: {
     fixedCents: 99, // 0,99 €
     fxSpreadBps: 50, // 0,50 %
-    // Coste del medio de pago, repercutido a quien lo elige. La transferencia
-    // bancaria (SEPA Instant al IBAN del socio EDE) no tiene coste extra.
-    // Ajustar con las tarifas reales del adquirente / TPV.
-    // VERIFICAR CON ASESOR: la PSD2 (art. 62.4) prohíbe recargos por tarjetas
-    // de consumo. Alternativa legal con las mismas cifras: precio estándar que
-    // ya incluye el coste de tarjeta y descuento por pagar con Bizum o transferencia.
-    paymentMethods: {
+    // Coste INTERNO que nos cobra cada medio de pago por recibir el dinero.
+    // El cliente paga lo mismo con cualquier método: este coste lo asume la
+    // plataforma y debe cubrirse con la comisión de servicio. Solo se usa para
+    // la contabilidad y el cálculo de márgenes. Ajustar con las tarifas reales.
+    paymentMethodCosts: {
       SEPA: { pct: 0, fixedCents: 0 },
       BIZUM: { pct: 0.004, fixedCents: 0 },
       CARD: { pct: 0.01, fixedCents: 0 },

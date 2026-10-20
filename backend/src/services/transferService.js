@@ -6,7 +6,7 @@ import { newId } from '../lib/ids.js';
 import { badRequest, conflict, forbidden, notFound, unprocessable } from '../lib/errors.js';
 import { STATUS, canTransition, isTerminal, STATUS_LABELS_ES } from '../domain/transferStates.js';
 import { getCorridor } from '../domain/corridors.js';
-import { paymentFeeMinor } from '../domain/quote.js';
+import { paymentMethodCostMinor } from '../domain/quote.js';
 import { audit } from './store.js';
 
 const PAYMENT_METHODS = ['BIZUM', 'CARD', 'SEPA'];
@@ -103,8 +103,6 @@ export function createTransferService({ store, providers, stepDelayMs = config.s
       settlementToken: quote.settlementToken,
       settlementNetwork: chain.network,
       sendAmountMinor: quote.sendAmountMinor,
-      paymentFeeMinor: paymentFeeMinor(paymentMethod, quote.sendAmountMinor),
-      totalChargeMinor: quote.sendAmountMinor + paymentFeeMinor(paymentMethod, quote.sendAmountMinor),
       convertedAmountMinor: quote.convertedAmountMinor,
       fixedFeeMinor: quote.fixedFeeMinor,
       receiveAmountMinor: quote.receiveAmountMinor,
@@ -117,7 +115,7 @@ export function createTransferService({ store, providers, stepDelayMs = config.s
       updatedAt: now,
     };
 
-    const payment = await onRamp.createPaymentIntent({ transferId: t.id, amountMinor: t.totalChargeMinor, method: paymentMethod, user });
+    const payment = await onRamp.createPaymentIntent({ transferId: t.id, amountMinor: t.sendAmountMinor, method: paymentMethod, user });
     t.payment = payment;
 
     quote.usedBy = t.id;
@@ -134,10 +132,11 @@ export function createTransferService({ store, providers, stepDelayMs = config.s
     if (t.status !== STATUS.AWAITING_PAYMENT) return t; // webhook repetido: idempotente
     const payment = onRamp.getPayment(paymentId);
     if (payment?.status !== 'RECEIVED') throw conflict('PAYMENT_NOT_RECEIVED', 'El partner no confirma el pago');
-    transition(t, STATUS.FUNDS_RECEIVED, { amountMinor: t.totalChargeMinor, method: t.paymentMethod });
-    ledger(t, 'customer_payment', t.totalChargeMinor, t.sourceCurrency);
-    // El proveedor del medio de pago retiene su comisión antes de abonar al socio EDE.
-    if (t.paymentFeeMinor) ledger(t, 'payment_method_cost', -t.paymentFeeMinor, t.sourceCurrency);
+    transition(t, STATUS.FUNDS_RECEIVED, { amountMinor: t.sendAmountMinor, method: t.paymentMethod });
+    ledger(t, 'customer_payment', t.sendAmountMinor, t.sourceCurrency);
+    // Coste que nos cobra el medio de pago (lo asume la plataforma, no el cliente).
+    const payinCost = paymentMethodCostMinor(t.paymentMethod, t.sendAmountMinor);
+    if (payinCost) ledger(t, 'payment_method_cost', -payinCost, t.sourceCurrency);
     startSettlement(t);
     return t;
   }
@@ -206,9 +205,8 @@ export function createTransferService({ store, providers, stepDelayMs = config.s
     transition(t, STATUS.FAILED, { reason: err.message });
     // En sandbox se reembolsa automáticamente al método de pago original.
     // En producción esto pasa por una cola de revisión de operaciones.
-    // Se devuelve todo lo cobrado, incluido el coste del medio de pago.
-    transition(t, STATUS.REFUNDED, { amountMinor: t.totalChargeMinor, currency: t.sourceCurrency });
-    ledger(t, 'refund', -t.totalChargeMinor, t.sourceCurrency);
+    transition(t, STATUS.REFUNDED, { amountMinor: t.sendAmountMinor, currency: t.sourceCurrency });
+    ledger(t, 'refund', -t.sendAmountMinor, t.sourceCurrency);
   }
 
   function ledger(t, type, amountMinor, currency) {

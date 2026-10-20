@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildQuote } from '../src/domain/quote.js';
+import { buildQuote, paymentMethodCostMinor } from '../src/domain/quote.js';
 import { validateRecipient, isValidDui } from '../src/domain/recipients.js';
 import { isValidDni, isValidNie } from '../src/domain/identity.js';
 import { canTransition } from '../src/domain/transferStates.js';
@@ -74,13 +74,10 @@ test('tokens y contraseñas', () => {
   assert.ok(!verifyPassword('abc12346', h));
 });
 
-test('coste del medio de pago: transferencia sin coste, Bizum y tarjeta repercutidos', () => {
+test('coste interno del medio de pago: no se cobra al cliente', () => {
   const q = buildQuote({ corridorId: 'ES-CO', mode: 'send', amountMinor: 20000, midRate: 4650 });
-  const by = Object.fromEntries(q.paymentOptions.map((o) => [o.method, o]));
-  assert.equal(by.SEPA.feeMinor, 0);
-  assert.equal(by.SEPA.totalChargeMinor, 20000);
-  assert.equal(by.BIZUM.feeMinor, 80); // 0,4 %
-  assert.equal(by.CARD.feeMinor, 200); // 1 %
-  assert.equal(by.CARD.totalChargeMinor, 20200);
-  assert.ok(by.CARD.totalCostPct > by.BIZUM.totalCostPct && by.BIZUM.totalCostPct > by.SEPA.totalCostPct);
+  assert.equal(q.paymentOptions, undefined);
+  assert.equal(paymentMethodCostMinor('SEPA', 20000), 0);
+  assert.equal(paymentMethodCostMinor('BIZUM', 20000), 80);
+  assert.equal(paymentMethodCostMinor('CARD', 20000), 200);
 });
