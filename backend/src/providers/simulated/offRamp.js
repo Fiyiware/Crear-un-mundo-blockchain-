@@ -5,7 +5,7 @@ import { newId } from '../../lib/ids.js';
 import { convertMinor } from '../../lib/money.js';
 
 // Tipos medios de mercado de referencia para el sandbox.
-const DEFAULT_RATES = { 'EURe:COP': 4650.0, 'EURe:USD': 1.085, 'EURe:MXN': 21.2, 'EURC:COP': 4650.0, 'EURC:USD': 1.085 };
+const DEFAULT_RATES = { 'EURe:COP': 3545.0, 'EURe:USD': 1.085, 'EURe:MXN': 21.2, 'EURC:COP': 3545.0, 'EURC:USD': 1.085 };
 
 export function createSimulatedOffRamp({ chain, rates = DEFAULT_RATES, failPayoutFor = [] } = {}) {
   const depositAddresses = new Map();

@@ -1,6 +1,6 @@
 # Informe del plan de pruebas (entorno simulado)
 
-Generado: 2026-10-20T16:37:29.258Z · Red: polygon-amoy (simulada) · Token: EURe · Node v22.22.0
+Generado: 2026-10-20T16:56:08.547Z · Red: polygon-amoy (simulada) · Token: EURe · Node v22.22.0
 
 > Las cifras de tiempo miden el procesamiento interno del orquestador sin
 > latencia de red real. Deben repetirse con los sandbox reales de los
@@ -14,7 +14,7 @@ Generado: 2026-10-20T16:37:29.258Z · Red: polygon-amoy (simulada) · Token: EUR
 | Operaciones ejecutadas | 100 |
 | Resultado conforme a lo esperado | 100 / 100 (100 %) |
 | Envíos completados | 75 |
-| Tiempo de procesamiento interno (media / p95 / máx.) | 2.2 ms / 4.9 ms / 10.0 ms |
+| Tiempo de procesamiento interno (media / p95 / máx.) | 2.3 ms / 3.5 ms / 6.2 ms |
 | Coste total para el usuario (media / mín. / máx.) | 1.72 % / 0.83 % / 10.30 % |
 | Volumen enviado (completados) | 11.677,00 € |
 | Coste para los usuarios con esta solución | 132,15 € |
