@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "name": "Remesas LatAm",
+    "slug": "remesas-latam",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "ios": { "supportsTablet": false, "bundleIdentifier": "com.remesaslatam.app" },
+    "android": { "package": "com.remesaslatam.app" },
+    "web": { "bundler": "metro" }
+  }
+}
