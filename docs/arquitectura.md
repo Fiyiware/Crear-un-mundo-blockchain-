@@ -95,10 +95,17 @@ stateDiagram-v2
 
 ### App móvil (`mobile/`, Expo SDK 58)
 
-Pantallas: registro/login · KYC · calculadora · destinatarios · confirmación y
-pago · detalle con timeline en tiempo real · historial. Navegación propia sin
-dependencias nativas extra para simplificar el prototipo. Capturas en
+Pantallas: bienvenida y registro · verificación de identidad · inicio con
+tipo de cambio del día · calculadora con teclado propio y cotización en vivo ·
+destinatarios · confirmación tipo recibo y elección de pago · seguimiento en
+tiempo real · actividad · perfil con límites del piloto. Navegación propia
+(pila + barra inferior con botón central de envío). Capturas en
 [`docs/capturas`](capturas).
+
+Sistema visual "Tinta y mango" (`mobile/src/theme.js`): azul tinta `#0B1B3F`
+para confianza, mango `#FFB020` como único color de acción, tipografía
+Bricolage Grotesque para cifras y títulos e Inter para texto, iconos Feather y
+banderas dibujadas (sin emojis, idénticas en iOS, Android y web).
 
 ## Decisiones y alternativas
 
