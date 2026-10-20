@@ -57,6 +57,7 @@ export function buildQuote({ corridorId, mode = 'send', amountMinor, midRate, no
     customerRate,
     totalCostMinor,
     totalCostPct: sendMinor > 0 ? round2((totalCostMinor / sendMinor) * 100) : 0,
+    paymentOptions: paymentOptions(sendMinor, totalCostMinor),
     estimatedDelivery: 'menos de 1 minuto',
     warnings,
     createdAt: new Date(now).toISOString(),
@@ -72,4 +73,23 @@ export function paymentMethodCostMinor(method, sendMinor) {
   const m = config.fees.paymentMethodCosts[method];
   if (!m) return 0;
   return Math.round(sendMinor * m.pct) + m.fixedCents;
+}
+
+/** Parte de la comisión del medio de pago que paga el cliente (céntimos). */
+export function customerPaymentFeeMinor(method, sendMinor) {
+  return config.fees.passPaymentCostToCustomer ? paymentMethodCostMinor(method, sendMinor) : 0;
+}
+
+/** Total a pagar con cada medio de pago, separando nuestra comisión de la del proveedor. */
+function paymentOptions(sendMinor, serviceCostMinor) {
+  return Object.keys(config.fees.paymentMethodCosts).map((method) => {
+    const feeMinor = customerPaymentFeeMinor(method, sendMinor);
+    const totalChargeMinor = sendMinor + feeMinor;
+    return {
+      method,
+      feeMinor,
+      totalChargeMinor,
+      totalCostPct: totalChargeMinor > 0 ? round2(((serviceCostMinor + feeMinor) / totalChargeMinor) * 100) : 0,
+    };
+  });
 }

@@ -1,6 +1,6 @@
 # Informe del plan de pruebas (entorno simulado)
 
-Generado: 2026-10-20T16:33:12.962Z · Red: polygon-amoy (simulada) · Token: EURe · Node v22.22.0
+Generado: 2026-10-20T16:37:29.258Z · Red: polygon-amoy (simulada) · Token: EURe · Node v22.22.0
 
 > Las cifras de tiempo miden el procesamiento interno del orquestador sin
 > latencia de red real. Deben repetirse con los sandbox reales de los
@@ -14,7 +14,7 @@ Generado: 2026-10-20T16:33:12.962Z · Red: polygon-amoy (simulada) · Token: EUR
 | Operaciones ejecutadas | 100 |
 | Resultado conforme a lo esperado | 100 / 100 (100 %) |
 | Envíos completados | 75 |
-| Tiempo de procesamiento interno (media / p95 / máx.) | 2.1 ms / 4.3 ms / 7.5 ms |
+| Tiempo de procesamiento interno (media / p95 / máx.) | 2.2 ms / 4.9 ms / 10.0 ms |
 | Coste total para el usuario (media / mín. / máx.) | 1.72 % / 0.83 % / 10.30 % |
 | Volumen enviado (completados) | 11.677,00 € |
 | Coste para los usuarios con esta solución | 132,15 € |
@@ -61,7 +61,7 @@ La referencia de mercado (6 %) es un parámetro: sustitúyase por el coste medio
 ## Conciliación
 
 - Saldo de la wallet de tesorería: 84,15 € · comisiones esperadas: 84,15 €
-- Euros recibidos de usuarios: 13.152,00 € · reembolsados: 1475,00 €
+- Euros recibidos de usuarios: 13.215,74 € · reembolsados: 1482,89 €
 
 ## Límites aplicados
 

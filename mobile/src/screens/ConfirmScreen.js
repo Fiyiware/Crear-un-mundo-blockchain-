@@ -5,15 +5,20 @@ import { Button, ErrorText, Flag, Header, Icon, Row, Screen, T } from '../compon
 import { amountParts, firstName, money, METHOD_LABEL, PAYMENT_LABEL, rate } from '../format';
 import { C, R } from '../theme';
 
-// El precio es el mismo con cualquier método de pago.
+// Nuestra comisión de envío es la misma con cualquier método; la comisión del
+// medio de pago la cobra el proveedor (banco, Visa/Mastercard, Bizum) y se
+// muestra aparte para que el cliente elija.
 const PAYMENT_METHODS = [
-  { value: 'BIZUM', hint: 'Al instante, con tu móvil', icon: 'smartphone' },
-  { value: 'CARD', hint: 'Débito o crédito, con 3D Secure', icon: 'credit-card' },
   { value: 'SEPA', hint: 'SEPA Instant desde tu banco', icon: 'home' },
+  { value: 'BIZUM', hint: 'Al instante, con tu móvil', icon: 'smartphone' },
+  { value: 'CARD', hint: 'Visa o Mastercard, con 3D Secure', icon: 'credit-card' },
 ];
+const PROVIDER = { SEPA: 'tu banco', BIZUM: 'Bizum', CARD: 'Visa / Mastercard' };
 
 export default function ConfirmScreen({ quote, recipient, onBack, onCreated }) {
-  const [paymentMethod, setPaymentMethod] = useState('BIZUM');
+  const [paymentMethod, setPaymentMethod] = useState('SEPA');
+  const options = Object.fromEntries((quote.paymentOptions ?? []).map((o) => [o.method, o]));
+  const selected = options[paymentMethod] ?? { feeMinor: 0, totalChargeMinor: quote.sendAmountMinor };
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const receive = amountParts(quote.receiveAmountMinor, quote.destinationCurrency);
@@ -33,7 +38,7 @@ export default function ConfirmScreen({ quote, recipient, onBack, onCreated }) {
   }
 
   return (
-    <Screen footer={<Button title={`Pagar ${money(quote.sendAmountMinor, 'EUR')} con ${PAYMENT_LABEL[paymentMethod]}`} icon="lock" onPress={confirm} loading={loading} />}>
+    <Screen footer={<Button title={`Pagar ${money(selected.totalChargeMinor, 'EUR')} con ${PAYMENT_LABEL[paymentMethod]}`} icon="lock" onPress={confirm} loading={loading} />}>
       <Header title="Revisa y paga" onBack={onBack} />
 
       <View style={{ backgroundColor: C.card, borderRadius: 24 }}>
@@ -76,8 +81,10 @@ export default function ConfirmScreen({ quote, recipient, onBack, onCreated }) {
         </View>
 
         <View style={{ paddingHorizontal: 20, paddingTop: 6, paddingBottom: 16 }}>
-          <Row label="Pagas" value={money(quote.sendAmountMinor, 'EUR')} strong />
-          <Row label="Comisión del envío (incluida)" value={money(quote.fixedFeeMinor, 'EUR')} />
+          <Row label="Importe del envío" value={money(quote.sendAmountMinor, 'EUR')} />
+          <Row label="Nuestra comisión de envío (incluida)" value={money(quote.fixedFeeMinor, 'EUR')} />
+          <Row label={`Comisión de ${PROVIDER[paymentMethod]}`} value={selected.feeMinor ? `+${money(selected.feeMinor, 'EUR')}` : 'Gratis'} valueColor={selected.feeMinor ? C.ink : C.success} />
+          <Row label="Total a pagar" value={money(selected.totalChargeMinor, 'EUR')} strong />
           <Row label="Tipo de cambio" value={`1 € = ${rate(quote.customerRate, quote.destinationCurrency)} ${quote.destinationCurrency}`} />
           <Row label="Cobra en" value={destination} />
           <Row label="Llega en" value={quote.estimatedDelivery} valueColor={C.success} />
@@ -102,9 +109,20 @@ export default function ConfirmScreen({ quote, recipient, onBack, onCreated }) {
                 <Icon name={m.icon} size={19} color={on ? C.accent : C.ink} />
               </View>
               <View style={{ flex: 1 }}>
-                <T v="bold" size={15}>
-                  {PAYMENT_LABEL[m.value]}
-                </T>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <T v="bold" size={15}>
+                    {PAYMENT_LABEL[m.value]}
+                  </T>
+                  {options[m.value]?.feeMinor ? (
+                    <T v="semi" size={12} color={C.muted}>{`+${money(options[m.value].feeMinor, 'EUR')}`}</T>
+                  ) : (
+                    <View style={{ backgroundColor: C.successBg, paddingHorizontal: 6, paddingVertical: 1, borderRadius: 999 }}>
+                      <T v="bold" size={11} color={C.success}>
+                        Gratis
+                      </T>
+                    </View>
+                  )}
+                </View>
                 <T size={12} color={C.muted}>
                   {m.hint}
                 </T>
@@ -120,7 +138,7 @@ export default function ConfirmScreen({ quote, recipient, onBack, onCreated }) {
       <View style={{ marginTop: 14 }}>
         <ErrorText>{error}</ErrorText>
         <T size={12} color={C.muted} style={{ textAlign: 'center', lineHeight: 18 }}>
-          {`Mismo precio con cualquier método de pago. Tu pago lo custodia una entidad de dinero electrónico regulada en la UE. El tipo de cambio queda fijado hasta las ${new Date(quote.expiresAt).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}.`}
+          {`La comisión de Bizum o de la tarjeta la cobra ese proveedor, no nosotros: por transferencia no pagas nada extra. Tu pago lo custodia una entidad de dinero electrónico regulada en la UE. El tipo de cambio queda fijado hasta las ${new Date(quote.expiresAt).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}.`}
         </T>
       </View>
     </Screen>

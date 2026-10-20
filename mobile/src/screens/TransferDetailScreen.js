@@ -186,7 +186,7 @@ export default function TransferDetailScreen({ transferId, onBack }) {
             </>
           )}
           {instr.type === 'CARD' && <Row label="Pasarela" value="3D Secure del partner" />}
-          <Row label="Importe" value={money(t.sendAmountMinor, 'EUR')} strong />
+          <Row label="Importe" value={money(t.totalChargeMinor ?? t.sendAmountMinor, 'EUR')} strong />
           <Button title="Simular pago (sandbox)" icon="zap" onPress={pay} loading={paying} style={{ marginTop: 12 }} />
           <Button title="Cancelar envío" variant="soft" small style={{ marginTop: 8 }} onPress={() => api.cancelTransfer(t.id).then(setT, (e) => setError(e.message))} />
         </Card>
@@ -231,6 +231,8 @@ export default function TransferDetailScreen({ transferId, onBack }) {
         <Row label="Token" value={`${t.settlementToken} · euro regulado`} />
         <Row label="Red" value={NETWORK_LABEL[t.settlementNetwork] ?? t.settlementNetwork} />
         <Row label="Pagaste con" value={{ BIZUM: 'Bizum', CARD: 'Tarjeta', SEPA: 'Transferencia SEPA' }[t.paymentMethod]} />
+        {t.paymentFeeMinor ? <Row label="Comisión del medio de pago" value={money(t.paymentFeeMinor, 'EUR')} /> : null}
+        <Row label="Total cobrado" value={money(t.totalChargeMinor ?? t.sendAmountMinor, 'EUR')} />
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 6 }}>
           <T size={14} color={C.muted}>
             Transacción

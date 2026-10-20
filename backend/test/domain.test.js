@@ -74,9 +74,13 @@ test('tokens y contraseñas', () => {
   assert.ok(!verifyPassword('abc12346', h));
 });
 
-test('coste interno del medio de pago: no se cobra al cliente', () => {
+test('comisión del medio de pago separada de la nuestra: transferencia gratis', () => {
   const q = buildQuote({ corridorId: 'ES-CO', mode: 'send', amountMinor: 20000, midRate: 4650 });
-  assert.equal(q.paymentOptions, undefined);
+  const by = Object.fromEntries(q.paymentOptions.map((o) => [o.method, o]));
+  assert.equal(by.SEPA.totalChargeMinor, 20000);
+  assert.equal(by.BIZUM.feeMinor, 80);
+  assert.equal(by.CARD.totalChargeMinor, 20200);
+  assert.equal(q.fixedFeeMinor, 99); // nuestra comisión no cambia con el método
   assert.equal(paymentMethodCostMinor('SEPA', 20000), 0);
   assert.equal(paymentMethodCostMinor('BIZUM', 20000), 80);
   assert.equal(paymentMethodCostMinor('CARD', 20000), 200);

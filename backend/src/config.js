@@ -25,10 +25,14 @@ export const config = {
   fees: {
     fixedCents: 99, // 0,99 €
     fxSpreadBps: 50, // 0,50 %
-    // Coste INTERNO que nos cobra cada medio de pago por recibir el dinero.
-    // El cliente paga lo mismo con cualquier método: este coste lo asume la
-    // plataforma y debe cubrirse con la comisión de servicio. Solo se usa para
-    // la contabilidad y el cálculo de márgenes. Ajustar con las tarifas reales.
+    // Comisión que cobra cada medio de pago (banco, Visa/Mastercard, Bizum).
+    // Con passPaymentCostToCustomer=true se muestra al cliente por separado de
+    // nuestra comisión de envío y la paga él: la transferencia es gratis.
+    // VERIFICAR CON ASESOR: la PSD2 (art. 62.4, RDL 19/2018 en España) prohíbe
+    // recargos por pagar con tarjetas de consumo. Si no se puede repercutir,
+    // poner false: el cliente paga lo mismo con cualquier método y el coste lo
+    // asume la plataforma. Ajustar porcentajes con las tarifas reales.
+    passPaymentCostToCustomer: true,
     paymentMethodCosts: {
       SEPA: { pct: 0, fixedCents: 0 },
       BIZUM: { pct: 0.004, fixedCents: 0 },

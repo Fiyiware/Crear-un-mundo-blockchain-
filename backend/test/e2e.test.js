@@ -24,7 +24,8 @@ test('flujo completo España ➔ Colombia (Nequi)', async () => {
   assert.equal(transfer.status, 201, JSON.stringify(transfer.body));
   assert.equal(transfer.body.status, 'AWAITING_PAYMENT');
   assert.equal(transfer.body.payment.instructions.type, 'BIZUM');
-  assert.equal(transfer.body.totalChargeMinor, undefined); // mismo precio con cualquier método
+  assert.equal(transfer.body.paymentFeeMinor, 80); // comisión de Bizum, a cargo del cliente
+  assert.equal(transfer.body.totalChargeMinor, 20080);
 
   const pay = await s.api('POST', `/v1/sandbox/transfers/${transfer.body.id}/simulate-payment`, { token });
   assert.equal(pay.status, 202);
@@ -45,8 +46,8 @@ test('flujo completo España ➔ Colombia (Nequi)', async () => {
   const { body } = await s.api('GET', '/v1/sandbox/ledger');
   const entries = body.ledger.filter((e) => e.transferId === transfer.body.id);
   assert.equal(entries.find((e) => e.type === 'fee_revenue').amountMinor, 99);
-  assert.equal(entries.find((e) => e.type === 'payment_method_cost').amountMinor, -80); // Bizum 0,4 %, lo asume la plataforma
-  assert.equal(entries.find((e) => e.type === 'customer_payment').amountMinor, 20000);
+  assert.equal(entries.find((e) => e.type === 'payment_method_cost').amountMinor, -80); // Bizum 0,4 %
+  assert.equal(entries.find((e) => e.type === 'customer_payment').amountMinor, 20080); // la paga el cliente
   assert.ok(entries.find((e) => e.type === 'fx_margin').amountMinor > 0);
 
   // La wallet de tesorería conserva exactamente la comisión fija en tokens.
@@ -119,7 +120,7 @@ test('fallo en el abono provoca reembolso automático', async () => {
   await s.transfers.waitForSettlement(transfer.body.id);
   const final = await s.api('GET', `/v1/transfers/${transfer.body.id}`, { token });
   assert.equal(final.body.status, 'REFUNDED');
-  assert.equal(final.body.timeline.at(-1).amountMinor, final.body.sendAmountMinor);
+  assert.equal(final.body.timeline.at(-1).amountMinor, final.body.totalChargeMinor);
   assert.match(final.body.failureReason, /rechazada/);
 });
 
