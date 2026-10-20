@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { api } from '../api';
-import { Button, ErrorText, Flag, Header, Icon, Row, Screen, T } from '../components/ui';
+import { Button, ErrorText, Flag, Header, Icon, Notice, Row, Screen, T } from '../components/ui';
 import { amountParts, firstName, money, METHOD_LABEL, PAYMENT_LABEL, rate } from '../format';
 import { C, R } from '../theme';
 
@@ -85,7 +85,11 @@ export default function ConfirmScreen({ quote, recipient, onBack, onCreated }) {
           <Row label="Nuestra comisión de envío (incluida)" value={money(quote.fixedFeeMinor, 'EUR')} />
           <Row label={`Comisión de ${PROVIDER[paymentMethod]}`} value={selected.feeMinor ? `+${money(selected.feeMinor, 'EUR')}` : 'Gratis'} valueColor={selected.feeMinor ? C.ink : C.success} />
           <Row label="Total a pagar" value={money(selected.totalChargeMinor, 'EUR')} strong />
-          <Row label="Tipo de cambio" value={`1 € = ${rate(quote.customerRate, quote.destinationCurrency)} ${quote.destinationCurrency}`} />
+          <View style={{ height: 1, backgroundColor: C.lineSoft, marginVertical: 6 }} />
+          <Row label="Tipo de mercado (1 €)" value={`${rate(quote.midMarketRate, quote.destinationCurrency)} ${quote.destinationCurrency}`} />
+          <Row label={`Nuestro tipo (−${String(quote.fxSpreadBps / 100).replace('.', ',')} %)`} value={`${rate(quote.customerRate, quote.destinationCurrency)} ${quote.destinationCurrency}`} />
+          <Row label="Ganamos con tu envío" value={`${money(quote.totalCostMinor, 'EUR')} · ${String(quote.totalCostPct).replace('.', ',')} %`} strong />
+          <View style={{ height: 1, backgroundColor: C.lineSoft, marginVertical: 6 }} />
           <Row label="Cobra en" value={destination} />
           <Row label="Llega en" value={quote.estimatedDelivery} valueColor={C.success} />
         </View>
@@ -135,6 +139,13 @@ export default function ConfirmScreen({ quote, recipient, onBack, onCreated }) {
         })}
       </View>
 
+      {paymentMethod === 'CARD' && (
+        <View style={{ marginTop: 12 }}>
+          <Notice tone="warn" icon="info">
+            Con tarjeta de crédito, tu banco puede tratar el envío como una disposición de efectivo y cobrarte su comisión e intereses. Eso no lo cobramos nosotros. Con débito, Bizum o transferencia no pasa.
+          </Notice>
+        </View>
+      )}
       <View style={{ marginTop: 14 }}>
         <ErrorText>{error}</ErrorText>
         <T size={12} color={C.muted} style={{ textAlign: 'center', lineHeight: 18 }}>

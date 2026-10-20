@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { api } from '../api';
 import { Avatar, Button, Flag, Header, Icon, Notice, Screen, Segmented, T } from '../components/ui';
-import { amountParts, firstName, group, METHOD_LABEL, rate } from '../format';
+import { amountParts, firstName, group, METHOD_LABEL, money, rate } from '../format';
 import { C, F, R } from '../theme';
 
 const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', ',', '0', 'back'];
@@ -153,7 +153,7 @@ export default function SendScreen({ recipient, corridorId: initialCorridor = 'E
           </T>
         ) : quote ? (
           <T size={13} color={C.muted2} num>
-            Comisión <T v="bold" size={13}>0,99 €</T> · coste total <T v="bold" size={13}>{`${String(quote.totalCostPct).replace('.', ',')} %`}</T> · por transferencia, sin comisión extra
+            Mercado <T v="bold" size={13}>{`${rate(quote.midMarketRate, quote.destinationCurrency)}`}</T> · nuestro margen <T v="bold" size={13}>{`${String(quote.fxSpreadBps / 100).replace('.', ',')} %`}</T> + <T v="bold" size={13}>{money(quote.fixedFeeMinor, 'EUR')}</T> · ganamos <T v="bold" size={13}>{money(quote.totalCostMinor, 'EUR')}</T>
           </T>
         ) : null}
       </View>
